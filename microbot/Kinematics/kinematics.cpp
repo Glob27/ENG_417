@@ -18,7 +18,7 @@ int Microbot::InverseKinematics(Taskspace t, Jointspace &j){
 	
 	double theta1 = std::atan2(t.y, t.x);
 	double theta234 = t.p + (PI / 2); //usig the radain version of 90 degrees as all function in C++ use rads
-	double theta5 = t.r
+	double theta5 = t.r;
 	
 	//trig we can do so far
 	double c1 = cos(theta1);
