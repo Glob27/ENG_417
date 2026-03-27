@@ -1,6 +1,7 @@
 #include "kinematics.h"
 #include <array>
 #include <cmath>
+#include <algorithm>
 
 int Microbot::InverseKinematics(Taskspace t, Jointspace &j){
 
@@ -16,32 +17,46 @@ int Microbot::InverseKinematics(Taskspace t, Jointspace &j){
     double p  = t.p;
     double r  = t.r;
 	
-	double theta1 = std::atan2(t.y, t.x);
-	double theta234 = t.p + (PI / 2); //usig the radain version of 90 degrees as all function in C++ use rads
-	double theta5 = t.r;
+	double theta1 = std::atan2(py, px);
+	double theta234 = p + (PI / 2); //usig the radain version of 90 degrees as all function in C++ use rads
+	double theta5 = r;
 	
 	//trig we can do so far
 	double c1 = cos(theta1);
 	double s1 = sin(theta1);
 	double c234 = cos(theta234);
 	double s234 = sin(theta234);
-	double c5 = cos(theta5);
-	double s5 = sin(theta5);
 
 
 	//ok getting just theta2 is a bit of a proscess becouse i got to get wrist pos values
-	double Wx = t.x - d * c1 * s234;
-	double Wy = t.y - d * s1 * s234;
-	double Wz = t.z + d * c234;
+	double Wx = px - d * c1 * s234;
+	double Wy = py - d * s1 * s234;
+	double Wz = pz + d * c234;
 
 	//we can now get theta3
-	double c3 = (Wx^2 + Wy^2 + (Wz - h) ^ 2) / (2 * a^2);
-	double s3 = -*sqrt(1 - c3^2); //(theta3 < 0)
+	double c3_raw = ((Wx * Wx) + (Wy * Wy) + ((Wz - h) * (Wz - h))) / (2 * (a * a)) - 1;
+	
+	//making sure we arent outside the work space
+	if (c3_raw > 1.0 || c3_raw < -1.0) {
+		std::cout << "IK ERROR: Position out of reach\n";
+		return 0;  // or some failure flag
+	}
+
+	// Now safe to clamp small numerical errors
+	double c3 = std::max(-1.0, std::min(1.0, c3_raw));
+	
+	if (fabs(1 + c3) < 1e-6) {
+		std::cout << "IK WARNING: singular configuration\n"; //prevents dividing by zero
+		return 0;
+	}
+
+
+	double s3 = -sqrt(1 - (c3*c3)); //(theta3 < 0)
 	double theta3 = std::atan2(s3, c3);
 	
 	//now on to theta2
-	double c2 = ((Wz - h) * s3 + sqrt(Wx^2 + Wy^2) * (1 + c3)) / (2a(1 + c3));
-	double s2 = ((Wz - h) * (1 + c3) - s3 * sqrt(Wx ^ 2 + Wy ^ 2)) / (2a(1 + c3));
+	double c2 = ((Wz - h) * s3 + sqrt((Wx * Wx) + (Wy * Wy)) * (1 + c3)) / (2*a*(1 + c3));
+	double s2 = ((Wz - h) * (1 + c3) - s3 * sqrt((Wx * Wx) + (Wy * Wy))) / (2*a*(1 + c3));
 	double theta2 = std::atan2(s2, c2);
 
 	double theta4 = theta234 - theta2 - theta3;
