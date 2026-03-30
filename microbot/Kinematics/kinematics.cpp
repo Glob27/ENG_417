@@ -2,8 +2,11 @@
 #include <array>
 #include <cmath>
 #include <algorithm>
+#include <iostream>
+#include "main.cpp"
 
-double homeArray[6] = { 0,0,0,(15 * (pi / 180)),0,1 }; //need to measure x on site
+
+double homeArray[6] = { 0,0,0,(15 * (PI / 180)),0,1 }; //need to measure x on site
 int runs = 0;
 
 

@@ -26,7 +26,7 @@ int main()
 	Jointspace j;				// Local variable for kinematic calculations
 	Taskspace t;				// Local variable for kinematic calculations
 
-	int spe = 235;				// Motor speed; should not be higher than 240
+	int speed = 235;			// Motor speed; should not be higher than 240
 	int i = 1;
 	int out = 0;
 
@@ -90,7 +90,6 @@ int main()
 				if (speed > 240) speed = 240;
 				if (speed < 0) speed = 0;
 
-				robot.SendSet(speed); //should be me setting the speed
 
 				//IK controll
 				std::cout << "\nEnter target task-space values :\n";
