@@ -3,14 +3,14 @@
 #include <cmath>
 #include <algorithm>
 #include <iostream>
-#include "main.cpp"
 
 
-double homeArray[6] = { 0,0,0,(15 * (PI / 180)),0,1 }; //need to measure x on site
-int runs = 0;
+
+Taskspace homePos = { 0, 0, 0, (15 * (PI / 180)), 0, 1 };
+Taskspace currentPos = homePos;
 
 
-int Microbot::InverseKinematics(Taskspace t, Jointspace &j){
+int Microbot::InverseKinematics(Taskspace& t, int speed){
 
 	int i = 0;
 
@@ -138,23 +138,34 @@ int AngleToSteps(int motor, double angleRad) {
 }
 
 int Microbot::MoveTo(Taskspace &t, TaskSpaceStart &j, speed){
-	// write your move-to function here
-	
-	if (runs == 0) {
-		j.k[0] = homeArray[0];
-		j.k[1] = homeArray[1];
-		j.k[2] = homeArray[2];
-		j.k[3] = homeArray[3];
-		j.k[4] = homeArray[4];
-		j.k[5] = homeArray[5];
+	Jointspace currentJoint, targetJoint;
+	Registerspace delta;
+
+	// Convert previous task position to joint angles
+	if (!InverseKinematics(lastTask, currentJoint))
+	{
+		std::cout << "MoveTo ERROR: could not solve IK for starting position.\n";
+		return 0;
 	}
 
-	
-	doubel diffrence = { t.x - j.k[0],t.y - j.k[1],t.z - j.k[2],t.p - j.k[3], t.r - j.k[4], t.g - j.k[5] };
+	// Convert target task position to joint angles
+	if (!InverseKinematics(t, targetJoint))
+	{
+		std::cout << "MoveTo ERROR: could not solve IK for target position.\n";
+		return 0;
+	}
 
+	// Convert angle differences to step differences
+	delta.r[1] = AngleToSteps(1, targetJoint.t[0] - currentJoint.t[0]);
+	delta.r[2] = AngleToSteps(2, targetJoint.t[1] - currentJoint.t[1]);
+	delta.r[3] = AngleToSteps(3, targetJoint.t[2] - currentJoint.t[2]);
+	delta.r[4] = AngleToSteps(4, targetJoint.t[3] - currentJoint.t[3]);
+	delta.r[5] = AngleToSteps(5, targetJoint.t[4] - currentJoint.t[4]);
+	delta.r[6] = 0; // gripper not being moved here
+	delta.r[7] = 0; // keep unused slot zero
 
+	SendStep(speed, delta);
 
-
-
-	return(0);
+	lastTask = t;
+	return 1;
 }

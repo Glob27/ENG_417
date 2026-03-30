@@ -21,110 +21,118 @@ void printMenu()
 
 int main()
 {
-	Microbot robot;				// Local variable of the microbot class
-	Registerspace delta;		// Local variable for input of motor steps
-	Jointspace j;				// Local variable for kinematic calculations
-	Taskspace t;				// Local variable for kinematic calculations
+    Microbot robot;
+    Registerspace delta;
+    Taskspace t;
 
-	int speed = 235;			// Motor speed; should not be higher than 240
-	int i = 1;
-	int out = 0;
+    int speed = 235;
+    int choice;
 
-	bool running = true;
-	while (running)	//Having the user choose from the menu
-	{
-		printMenu();
-		std::cin >> choice;
+    bool running = true;
+    while (running)
+    {
+        printMenu();
+        std::cin >> choice;
 
-		if (std::cin.fail()) { //good to have idk how you can mess up this badly tho
-			clearInput();
-			std::cout << "Invalid menu input.\n";
-			continue;
-		}
+        if (std::cin.fail())
+        {
+            clearInput();
+            std::cout << "Invalid menu input.\n";
+            continue;
+        }
 
-		//menu selection
-		switch (choice)
-		{
-			case 1:
+        switch (choice)
+        {
+        case 1:
+        {
+            std::cout << "Enter speed (0-240): ";
+            std::cin >> speed;
 
-				std::cout << "Enter speed (0–240): ";
-				std::cin >> speed;
+            if (std::cin.fail())
+            {
+                clearInput();
+                std::cout << "Invalid speed.\n";
+                break;
+            }
 
-				if (std::cin.fail())
-				{
-					clearInput();
-					std::cout << "Invalid speed.\n";
-					break;
-				}
+            if (speed > 240) speed = 240;
+            if (speed < 0) speed = 0;
 
-				// Clamp speed
-				if (speed > 240) speed = 240;
-				if (speed < 0) speed = 0;
+            std::cout << "\nEnter 7 motor steps (m1 m2 m3 m4 m5 m6 m7):\n";
+            std::cin >> delta.r[1] >> delta.r[2] >> delta.r[3]
+                >> delta.r[4] >> delta.r[5] >> delta.r[6] >> delta.r[7];
 
-				//Motor controll
-				std::cout << "\nEnter 7 motor steps (m1 m2 m3 m4 m5 m6 m7):\n";
-				std::cin >> delta.r[1] >> delta.r[2] >> delta.r[3]
-					>> delta.r[4] >> delta.r[5] >> delta.r[6] >> delta.r[7];
+            if (std::cin.fail())
+            {
+                clearInput();
+                std::cout << "Invalid motor input.\n";
+                break;
+            }
 
-				if (std::cin.fail())
-				{
-					clearInput();
-					std::cout << "Invalid motor input.\n";
-					break;
-				}
+            robot.SendStep(speed, delta);
+            break;
+        }
 
-				robot.SendStep(speed, delta);
+        case 2:
+        {
+            std::cout << "Enter speed (0-240): ";
+            std::cin >> speed;
 
-			case 2:
-				std::cout << "Enter speed (0–240): ";
-				std::cin >> speed;
+            if (std::cin.fail())
+            {
+                clearInput();
+                std::cout << "Invalid speed.\n";
+                break;
+            }
 
-				if (std::cin.fail())
-				{
-					clearInput();
-					std::cout << "Invalid speed.\n";
-					break;
-				}
+            if (speed > 240) speed = 240;
+            if (speed < 0) speed = 0;
 
-				// Clamp speed
-				if (speed > 240) speed = 240;
-				if (speed < 0) speed = 0;
+            std::cout << "\nEnter target task-space values:\n";
+            std::cout << "x y z p r g: ";
+            std::cin >> t.x >> t.y >> t.z >> t.p >> t.r >> t.g;
 
+            if (std::cin.fail())
+            {
+                clearInput();
+                std::cout << "Invalid IK input.\n";
+                break;
+            }
 
-				//IK controll
-				std::cout << "\nEnter target task-space values :\n";
-				std::cout << "x y z p r g: ";
-				std::cin >> t.x >> t.y >> t.z >> t.p >> t.r >> t.g;
+            if (!robot.MoveTo(t, speed))
+            {
+                std::cout << "Move failed.\n";
+            }
 
-				if (std::cin.fail())
-				{
-					clearInput();
-					std::cout << "Invalid IK input.\n";
-					break;
-				}
+            break;
+        }
 
-				//heres where we would put in the calls for IK and move.to
+        case 3:
+        {
+            std::cout << "section not yet ready\n";
+            break;
+        }
 
+        case 4:
+        {
+            std::cout << "section not yet ready\n";
+            break;
+        }
 
+        case 5:
+        {
+            running = false;
+            std::cout << "Exiting program.\n";
+            break;
+        }
 
+        default:
+        {
+            std::cout << "Invalid option.\n";
+            break;
+        }
+        }
+    }
 
-			case 3:
-				std::cout << "section not yet ready";
-
-			case 4:
-				std::cout << "section not yet ready";
-
-			case 5:
-				running = false;
-				std::cout << "Exiting program.\n";
-				break;
-
-			default:
-			{
-				std::cout << "Invalid option.\n";
-				break;
-			}
-		}
-	}
-
+    return 0;
 }
