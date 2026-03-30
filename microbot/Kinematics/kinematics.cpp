@@ -3,6 +3,10 @@
 #include <cmath>
 #include <algorithm>
 
+double homeArray[6] = { 0,0,0,(15 * (pi / 180)),0,1 }; //need to measure x on site
+int runs = 0;
+
+
 int Microbot::InverseKinematics(Taskspace t, Jointspace &j){
 
 	int i = 0;
@@ -130,9 +134,21 @@ int AngleToSteps(int motor, double angleRad) {
 	return static_cast<int>(angleRad * stepsPerRad[motor - 1]);
 }
 
-int Microbot::MoveTo(Taskspace &t){
+int Microbot::MoveTo(Taskspace &t, TaskSpaceStart &j, speed){
 	// write your move-to function here
 	
+	if (runs == 0) {
+		j.k[0] = homeArray[0];
+		j.k[1] = homeArray[1];
+		j.k[2] = homeArray[2];
+		j.k[3] = homeArray[3];
+		j.k[4] = homeArray[4];
+		j.k[5] = homeArray[5];
+	}
+
+	
+	doubel diffrence = { t.x - j.k[0],t.y - j.k[1],t.z - j.k[2],t.p - j.k[3], t.r - j.k[4], t.g - j.k[5] };
+
 
 
 

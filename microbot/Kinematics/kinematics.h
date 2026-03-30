@@ -52,6 +52,11 @@ constexpr double PI = acos(-1);
 		int r[9];
 	};
 
+	struct TaskSpaceStart
+	{
+		double k[6];
+	};
+
 class Microbot
 {
 private:

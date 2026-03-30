@@ -90,6 +90,8 @@ int main()
 				if (speed > 240) speed = 240;
 				if (speed < 0) speed = 0;
 
+				robot.SendSet(speed); //should be me setting the speed
+
 				//IK controll
 				std::cout << "\nEnter target task-space values :\n";
 				std::cout << "x y z p r g: ";
