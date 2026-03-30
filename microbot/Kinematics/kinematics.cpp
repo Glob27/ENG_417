@@ -79,18 +79,63 @@ int Microbot::InverseKinematics(Taskspace t, Jointspace &j){
 }
 
 int Microbot::ForwardKinematics(Jointspace j, Taskspace &t){
-	//Were starting by defining the matrix for the Robot
-	using ForwardKinematicsMatrix = std::array<std::array<double, 4>, 4>;
+	// Forward kinematics implemented using closed-form expressions
+	// derived from T_5^0 (see HW #3), without explicitly constructing the matrix
 
-
+	//JOINT ANGLES
+	double theta1 = j.t[0];
+	double theta2 = j.t[1];
+	double theta3 = j.t[2];
+	double theta4 = j.t[3];
+	double theta5 = j.t[4];
 	
+	//Combanation angles
+	double theta23 = theta2 + theta3;
+	double theta234 = theta2 + theta3 + theta4;
+	
+	//trig functions
+	double c1 = cos(theta1);
+	double s1 = sin(theta1);
 
+	double c2 = cos(theta2);
+	double s2 = sin(theta2);
 
+	double c23 = cos(theta23);
+	double s23 = sin(theta23);
 
-	return(0);
+	double c234 = cos(theta234);
+	double s234 = sin(theta234);
+
+	//the final values based on the 
+	t.x = c1 * (a * c2 + a * c23 + d * s234);
+	t.y = s1 * (a * c2 + a * c23 + d * s234);
+	t.z = h + a * s2 + a * s23 - d * c234;
+
+	t.p = theta234 - (PI / 2);
+	t.r = theta5;
+
+	return 1;
+}
+
+int AngleToSteps(int motor, double angleRad) {
+	static const double stepsPerRad[] = {
+		1125,   // Motor 1 (Base)
+		1125,   // Motor 2 (Shoulder)
+		672,    // Motor 3 (Elbow)
+		244.4,  // Motor 4 (Right wrist)
+		244.4,	//Motor 5 (Left wrist)
+		244.4	//Motr 6 (Gripper) //Not the accual ration we need to find this one
+	};
+
+	return static_cast<int>(angleRad * stepsPerRad[motor - 1]);
 }
 
 int Microbot::MoveTo(Taskspace &t){
 	// write your move-to function here
+	
+
+
+
+
 	return(0);
 }
