@@ -6,7 +6,7 @@
 
 
 
-Taskspace homePos = { 0, 0, 0, (15 * (PI / 180)), 0, 1 };
+Taskspace homePos = { 125, 0, 10, (15 * (PI / 180)), 0, 1 };
 Taskspace lastTask = homePos;
 
 int Microbot::InverseKinematics(Taskspace t, Jointspace& j){
