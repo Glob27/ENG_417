@@ -30,9 +30,9 @@
 #define LEFT_STEPS 1536
 #define GRIPPER_STEPS 375
 
-const double h  = 195.0; //mm
-const double a  = 177.8; //mm
-const double d  = 96.5; //mm
+const double h  = 252; //mm
+const double a  = 178; //mm
+const double d  = 80; //mm
 
 constexpr double PI = acos(-1);
 

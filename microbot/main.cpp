@@ -13,7 +13,7 @@ void printMenu()
 	std::cout << "\n=== Microbot Menu ===\n";
 	std::cout << "1. Send Manual Step Command\n";
 	std::cout << "2. Send IK Command\n";
-	std::cout << "3. Set Home Posistion\n";
+	std::cout << "3. Current Position Data\n";
 	std::cout << "4. Go To Home Posisiton\n";
 	std::cout << "5. Exit\n";
 	std::cout << "Choose an option: ";
