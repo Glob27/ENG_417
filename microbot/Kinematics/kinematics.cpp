@@ -6,7 +6,7 @@
 
 
 
-Taskspace homePos = { 125, 0, 10, (90 * (PI / 180)), 0, 0 };
+Taskspace homePos = { 125, 0, 20, (90 * (PI / 180)), 0, 0 };
 Taskspace lastTask = homePos;
 
 double RadtoDeg(double rad)
@@ -85,7 +85,7 @@ int Microbot::InverseKinematics(Taskspace t, Jointspace& j){
 	theta4 = RadtoDeg(theta4);
 	theta5 = RadtoDeg(theta5);
 
-	printf("angles the microbot is using %d %d %d %d %d \n", theta1, theta2, theta3, theta4, theta5);
+	printf("angles the microbot is using %.2f %.2f %.2f %.2f %.2f \n", theta1, theta2, theta3, theta4, theta5);
 	//printf("inside InverseKinematics\n");  // to be removed when the function is complete //ill remove this after testing
 	fflush(stdout); //assuming this needs to be removed too
 
@@ -174,9 +174,13 @@ int Microbot::MoveTo(Taskspace &t, int speed){
 	delta.r[1] = AngleToSteps(1, targetJoint.t[0] - currentJoint.t[0]);
 	delta.r[2] = AngleToSteps(2, targetJoint.t[1] - currentJoint.t[1]);
 	delta.r[3] = AngleToSteps(3, targetJoint.t[2] - currentJoint.t[2]);
+
+
 	delta.r[4] = AngleToSteps(4, targetJoint.t[3] - currentJoint.t[3]);
 	delta.r[5] = AngleToSteps(5, targetJoint.t[4] - currentJoint.t[4]);
-	delta.r[6] = mmToStepsGrip(t.g); // gripper not being moved here
+
+
+	delta.r[6] = mmToStepsGrip(t.g);
 	delta.r[7] = 0; // keep unused slot zero
 
 	SendStep(speed, delta);
