@@ -26,7 +26,7 @@ int main()
     Taskspace t;
 
     int speed = 235;
-    int choice;
+    int choice = 0;
 
     bool running = true;
     while (running)
