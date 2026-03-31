@@ -7,10 +7,9 @@
 
 
 Taskspace homePos = { 0, 0, 0, (15 * (PI / 180)), 0, 1 };
-Taskspace currentPos = homePos;
+Taskspace lastTask = homePos;
 
-
-int Microbot::InverseKinematics(Taskspace& t, int speed){
+int Microbot::InverseKinematics(Taskspace t, Jointspace& j){
 
 	int i = 0;
 
@@ -137,7 +136,7 @@ int AngleToSteps(int motor, double angleRad) {
 	return static_cast<int>(angleRad * stepsPerRad[motor - 1]);
 }
 
-int Microbot::MoveTo(Taskspace &t, TaskSpaceStart &j, speed){
+int Microbot::MoveTo(Taskspace &t, int speed){
 	Jointspace currentJoint, targetJoint;
 	Registerspace delta;
 
