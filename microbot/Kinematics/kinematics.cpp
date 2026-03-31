@@ -18,31 +18,32 @@ int Microbot::InverseKinematics(Taskspace t, Jointspace& j)
 	printf("inside InverseKinematics\n");
 	fflush(stdout);
 
-	// Extract taskspace values
 	double px = t.x;
 	double py = t.y;
 	double pz = t.z;
 	double p = t.p;
 	double r = t.r;
 
-	// Joint definitions from task space
 	double theta1 = std::atan2(py, px);
 	double theta234 = p + (PI / 2.0);
 	double theta5 = r;
 
-	// Trig
 	double c1 = std::cos(theta1);
 	double s1 = std::sin(theta1);
 	double c234 = std::cos(theta234);
 	double s234 = std::sin(theta234);
 
-	// Wrist center
+	// wrist center
 	double Wx = px - d * c1 * s234;
 	double Wy = py - d * s1 * s234;
 	double Wz = pz + d * c234;
 
-	// Solve theta3
-	double c3_raw = ((Wx * Wx) + (Wy * Wy) + ((Wz - h) * (Wz - h))) / (2.0 * (a * a)) - 1.0;
+	// planar coordinates for shoulder/elbow problem
+	double R = std::sqrt(Wx * Wx + Wy * Wy); // horizontal reach from base axis
+	double Z = Wz - h;                       // vertical height from shoulder plane
+
+	// elbow cosine law
+	double c3_raw = (R * R + Z * Z - a * a - a * a) / (2.0 * a * a);
 
 	if (c3_raw > 1.0 || c3_raw < -1.0) {
 		std::cout << "IK ERROR: Position out of reach\n";
@@ -51,31 +52,23 @@ int Microbot::InverseKinematics(Taskspace t, Jointspace& j)
 
 	double c3 = std::max(-1.0, std::min(1.0, c3_raw));
 
-	if (std::fabs(1.0 + c3) < 1e-6) {
-		std::cout << "IK WARNING: singular configuration\n";
-		return 0;
-	}
-
-	// Elbow-down solution
-	double s3 = -std::sqrt(1.0 - (c3 * c3));
+	// pick elbow-down branch
+	double s3 = -std::sqrt(1.0 - c3 * c3);
 	double theta3 = std::atan2(s3, c3);
 
-	// Solve theta2
-	double planar = std::sqrt((Wx * Wx) + (Wy * Wy));
+	// standard 2-link solution
+	double k1 = a + a * c3;
+	double k2 = a * s3;
 
-	double c2 = ((Wz - h) * s3 + planar * (1.0 + c3)) / (2.0 * a * (1.0 + c3));
-	double s2 = ((Wz - h) * (1.0 + c3) - s3 * planar) / (2.0 * a * (1.0 + c3));
-	double theta2 = std::atan2(s2, c2);
+	double theta2 = std::atan2(Z, R) - std::atan2(k2, k1);
 
-	// Solve theta4 so total pitch matches theta234
 	double theta4 = theta234 - theta2 - theta3;
 
-	// Store joint values
 	j.t[0] = theta1;
 	j.t[1] = theta2;
 	j.t[2] = theta3;
-	j.t[3] = theta4; // wrist pitch contribution
-	j.t[4] = theta5; // wrist roll
+	j.t[3] = theta4;
+	j.t[4] = theta5;
 
 	printf("angles the microbot is using %.2f %.2f %.2f %.2f %.2f\n",
 		RadtoDeg(theta1),
@@ -84,44 +77,6 @@ int Microbot::InverseKinematics(Taskspace t, Jointspace& j)
 		RadtoDeg(theta4),
 		RadtoDeg(theta5));
 	fflush(stdout);
-
-	return 1;
-}
-
-int Microbot::ForwardKinematics(Jointspace j, Taskspace& t)
-{
-	// Joint angles
-	double theta1 = j.t[0];
-	double theta2 = j.t[1];
-	double theta3 = j.t[2];
-	double theta4 = j.t[3];
-	double theta5 = j.t[4];
-
-	// Combined angles
-	double theta23 = theta2 + theta3;
-	double theta234 = theta2 + theta3 + theta4;
-
-	// Trig
-	double c1 = std::cos(theta1);
-	double s1 = std::sin(theta1);
-
-	double c2 = std::cos(theta2);
-	double s2 = std::sin(theta2);
-
-	double c23 = std::cos(theta23);
-	double s23 = std::sin(theta23);
-
-	double c234 = std::cos(theta234);
-	double s234 = std::sin(theta234);
-
-	// Position
-	t.x = c1 * (a * c2 + a * c23 + d * s234);
-	t.y = s1 * (a * c2 + a * c23 + d * s234);
-	t.z = h + a * s2 + a * s23 - d * c234;
-
-	// Orientation
-	t.p = theta234 - (PI / 2.0);
-	t.r = theta5;
 
 	return 1;
 }
