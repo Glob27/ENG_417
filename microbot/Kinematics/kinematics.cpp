@@ -9,6 +9,11 @@
 Taskspace homePos = { 125, 0, 10, (15 * (PI / 180)), 0, 1 };
 Taskspace lastTask = homePos;
 
+double RadtoDeg(double rad)
+{
+	return rad * (180 / PI);
+}
+
 int Microbot::InverseKinematics(Taskspace t, Jointspace& j){
 
 	int i = 0;
@@ -74,8 +79,14 @@ int Microbot::InverseKinematics(Taskspace t, Jointspace& j){
 	j.t[3] = theta4;
 	j.t[4] = theta5;
 
+	theta1 = RadtoDeg(theta1);
+	theta2 = RadtoDeg(theta2);
+	theta3 = RadtoDeg(theta3);
+	theta4 = RadtoDeg(theta4);
+	theta5 = RadtoDeg(theta5);
 
-	printf("inside InverseKinematics\n");  // to be removed when the function is complete //ill remove this after testing
+	printf("angles the microbot is using %d %d %d %d %d \n", theta1, theta2, theta3, theta4, theta5);
+	//printf("inside InverseKinematics\n");  // to be removed when the function is complete //ill remove this after testing
 	fflush(stdout); //assuming this needs to be removed too
 
 	
