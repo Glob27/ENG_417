@@ -113,6 +113,44 @@ int AngleToSteps(int motor, double angleRad)
 	return static_cast<int>(motorSign[motor] * angleRad * stepsPerRad[motor - 1]);
 }
 
+int Microbot::ForwardKinematics(Jointspace j, Taskspace& t)
+{
+	// Joint angles
+	double theta1 = j.t[0];
+	double theta2 = j.t[1];
+	double theta3 = j.t[2];
+	double theta4 = j.t[3];
+	double theta5 = j.t[4];
+
+	// Combined angles
+	double theta23 = theta2 + theta3;
+	double theta234 = theta2 + theta3 + theta4;
+
+	// Trig
+	double c1 = std::cos(theta1);
+	double s1 = std::sin(theta1);
+
+	double c2 = std::cos(theta2);
+	double s2 = std::sin(theta2);
+
+	double c23 = std::cos(theta23);
+	double s23 = std::sin(theta23);
+
+	double c234 = std::cos(theta234);
+	double s234 = std::sin(theta234);
+
+	// Position
+	t.x = c1 * (a * c2 + a * c23 + d * s234);
+	t.y = s1 * (a * c2 + a * c23 + d * s234);
+	t.z = h + a * s2 + a * s23 - d * c234;
+
+	// Orientation
+	t.p = theta234 - (PI / 2.0);
+	t.r = theta5;
+
+	return 1;
+}
+
 int mmToStepsGrip(double grip)
 {
 	return static_cast<int>(grip * 13.4);
