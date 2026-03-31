@@ -95,13 +95,12 @@ int main()
 
             std::cout << "\nEnter target task-space values:\n";
             std::cout << "x y z p r g: ";
-            double p_deg, r_deg, g_deg;
+            double p_deg, r_deg;
 
-            std::cin >> t.x >> t.y >> t.z >> p_deg >> r_deg >> g_deg;
+            std::cin >> t.x >> t.y >> t.z >> p_deg >> r_deg >> t.g;
 
             t.p = degToRad(p_deg);
             t.r = degToRad(r_deg);
-            t.g = degToRad(g_deg);
 
             if (std::cin.fail())
             {

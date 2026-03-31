@@ -6,7 +6,7 @@
 
 
 
-Taskspace homePos = { 125, 0, 10, (15 * (PI / 180)), 0, 1 };
+Taskspace homePos = { 125, 0, 10, (90 * (PI / 180)), 0, 0 };
 Taskspace lastTask = homePos;
 
 double RadtoDeg(double rad)
@@ -147,6 +147,11 @@ int AngleToSteps(int motor, double angleRad) {
 	return static_cast<int>(angleRad * stepsPerRad[motor - 1]);
 }
 
+int mmToStepsGrip(double grip) {
+	return grip * 13.4;
+}
+
+
 int Microbot::MoveTo(Taskspace &t, int speed){
 	Jointspace currentJoint, targetJoint;
 	Registerspace delta;
@@ -171,7 +176,7 @@ int Microbot::MoveTo(Taskspace &t, int speed){
 	delta.r[3] = AngleToSteps(3, targetJoint.t[2] - currentJoint.t[2]);
 	delta.r[4] = AngleToSteps(4, targetJoint.t[3] - currentJoint.t[3]);
 	delta.r[5] = AngleToSteps(5, targetJoint.t[4] - currentJoint.t[4]);
-	delta.r[6] = 0; // gripper not being moved here
+	delta.r[6] = mmToStepsGrip(t.g); // gripper not being moved here
 	delta.r[7] = 0; // keep unused slot zero
 
 	SendStep(speed, delta);
