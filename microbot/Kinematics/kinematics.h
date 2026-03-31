@@ -71,7 +71,7 @@ public:
 	// to be written in kinematics.cpp
 	int InverseKinematics(Taskspace t, Jointspace &j);
 	int ForwardKinematics(Jointspace j, Taskspace &t);
-	int MoveTo(Taskspace &t);
+	int MoveTo(Taskspace &t,int speed);
 	
 	// written in interface.cpp
 	int SendStep(int speed, Registerspace delta);
