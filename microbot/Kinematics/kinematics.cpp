@@ -5,8 +5,13 @@
 #include <iostream>
 #include <cstdio>
 
-Taskspace homePos = { 125, 0, 20, (90 * (PI / 180)), 0, 0 };
+Taskspace homePos = { 125, 0, 20, (-90 * (PI / 180)), 0, 0 };
 Taskspace lastTask = homePos;
+
+//these are to be adjusted as needed once in lab
+double k2 = 0.1;
+double k3 = 0.1;
+double k4 = 0.1;
 
 double RadtoDeg(double rad)
 {
@@ -63,8 +68,17 @@ int Microbot::InverseKinematics(Taskspace t, Jointspace& j)
 	// Solve theta2
 	double planar = std::sqrt((Wx * Wx) + (Wy * Wy));
 
-	double c2 = ((Wz - h) * s3 + planar * (1.0 + c3)) / (2.0 * a * (1.0 + c3));
-	double s2 = ((Wz - h) * (1.0 + c3) - s3 * planar) / (2.0 * a * (1.0 + c3));
+	double c2, s2;
+
+	if (Wx >= 0.0) {
+		c2 = ((Wz - h) * s3 + planar * (1.0 + c3)) / (2.0 * a * (1.0 + c3));
+		s2 = ((Wz - h) * (1.0 + c3) - s3 * planar) / (2.0 * a * (1.0 + c3));
+	}
+	else {
+		c2 = ((Wz - h) * s3 - planar * (1.0 + c3)) / (2.0 * a * (1.0 + c3));
+		s2 = ((Wz - h) * (1.0 + c3) + s3 * planar) / (2.0 * a * (1.0 + c3));
+	}
+
 	double theta2 = std::atan2(s2, c2);
 
 	// Solve theta4 so total pitch matches theta234
@@ -87,15 +101,16 @@ int Microbot::InverseKinematics(Taskspace t, Jointspace& j)
 
 	return 1;
 }
+
 int AngleToSteps(int motor, double angleRad)
 {
 	static const double stepsPerRad[] = {
-		1125.0, // Motor 1 (Base)
-		1125.0, // Motor 2 (Shoulder)
-		672.0,  // Motor 3 (Elbow)
-		244.4,  // Motor 4 (Wrist differential side A)
-		244.4,  // Motor 5 (Wrist differential side B)
-		244.4   // Motor 6 (Gripper placeholder)
+		BASE_STEPS / (2.0 * PI), // Motor 1 (Base)
+		SHOULDER_STEPS / (2.0 * PI), // Motor 2 (Shoulder)
+		ELBOW_STEPS / (2.0 * PI),  // Motor 3 (Elbow)
+		RIGHT_STEPS / (2.0 * PI),  // Motor 4 (Wrist differential side A)
+		LEFT_STEPS / (2.0 * PI),  // Motor 5 (Wrist differential side B)
+		GRIPPER_STEPS / 28.0   // Motor 6 (Gripper placeholder)
 	};
 
 	// Software-only direction correction
@@ -105,12 +120,38 @@ int AngleToSteps(int motor, double angleRad)
 		1,   // Motor 1
 		-1,  // Motor 2
 		-1,  // Motor 3
-		1,   // Motor 4
-		1,   // Motor 5
+		-1,   // Motor 4
+		-1,   // Motor 5
 		1    // Motor 6
 	};
 
-	return static_cast<int>(motorSign[motor] * angleRad * stepsPerRad[motor - 1]);
+	return static_cast<int>(std::round(motorSign[motor] * angleRad * stepsPerRad[motor - 1]));
+}
+
+//this is part of an output rework that lets us see the number of steps the robot takes
+//itll be deleted at the end
+double StepsToAngle(int motor, int steps) 
+{
+	static const double radPerStep[] = {
+		(2.0 * PI) / BASE_STEPS,
+		(2.0 * PI) / SHOULDER_STEPS,
+		(2.0 * PI) / ELBOW_STEPS,
+		(2.0 * PI) / RIGHT_STEPS,
+		(2.0 * PI) / LEFT_STEPS,
+		1.0
+	};
+
+	static const int motorSign[] = {
+		0,
+		1,
+		-1,
+		-1,
+		-1,
+		-1,
+		1
+	};
+
+	return (steps * radPerStep[motor - 1]) / motorSign[motor];
 }
 
 int Microbot::ForwardKinematics(Jointspace j, Taskspace& t)
@@ -153,27 +194,36 @@ int Microbot::ForwardKinematics(Jointspace j, Taskspace& t)
 
 int mmToStepsGrip(double grip)
 {
-	return static_cast<int>(grip * 13.4);
+	return static_cast<int>(std::round(grip * 13.4));
+}
+
+//anouther debugging tool thatll get got once were done
+double stepsToMmGrip(int steps)
+{
+	return steps / 13.4;
 }
 
 int Microbot::MoveTo(Taskspace& t, int speed)
 {
-	Jointspace currentJoint, targetJoint;
+	Jointspace currentJoint = {};
+	Jointspace targetJoint = {};
 	Registerspace delta = {};
+	Taskspace achievedTask = {};
 
-	// Find current joint values from remembered task pose
+	// Solve current remembered pose
 	if (!InverseKinematics(lastTask, currentJoint))
 	{
 		std::cout << "MoveTo ERROR: could not solve IK for starting position.\n";
 		return 0;
 	}
 
-	// Find target joint values
+	// Solve target pose
 	if (!InverseKinematics(t, targetJoint))
 	{
 		std::cout << "MoveTo ERROR: could not solve IK for target position.\n";
 		return 0;
 	}
+
 
 	//TaskSpace Testing
 
@@ -182,39 +232,40 @@ int Microbot::MoveTo(Taskspace& t, int speed)
 	delta.r[2] = AngleToSteps(2, targetJoint.t[1] - currentJoint.t[1]);
 	delta.r[3] = AngleToSteps(3, targetJoint.t[2] - currentJoint.t[2]);
 
-	// Wrist differential:
-	// same direction  -> pitch
-	// opposite direction -> roll
-	//
-	// So:
-	// motor4 = pitch + roll
-	// motor5 = pitch - roll
-	//
-	// Here:
-	// j.t[3] = wrist pitch
-	// j.t[4] = wrist roll
+	// Joint deltas in radians
+	double dt1 = targetJoint.t[0] - currentJoint.t[0];
+	double dt2 = targetJoint.t[1] - currentJoint.t[1];
+	double dt3 = targetJoint.t[2] - currentJoint.t[2];
+	double dt4 = targetJoint.t[3] - currentJoint.t[3];
+	double dt5 = targetJoint.t[4] - currentJoint.t[4];
+	
+	//gripper change in mm
+	double dg = t.g - lastTask.g;
+	
+	//cable comp from arm motion
+	double gComp = k2 * dt2 + k3 * dt3 + k4 * dt4;
+	
 
-	double currentPitch = currentJoint.t[3];
-	double currentRoll = currentJoint.t[4];
+	// Use coupled motor math like the better-working file
+	delta.r[1] = AngleToSteps(1, dt1);
 
-	double targetPitch = targetJoint.t[3];
-	double targetRoll = targetJoint.t[4];
+	// Shoulder motor
+	delta.r[2] = AngleToSteps(2, dt2);
 
-	double deltaPitch = targetPitch - currentPitch;
-	double deltaRoll = targetRoll - currentRoll;
+	// Elbow motor carries shoulder + elbow coupling
+	delta.r[3] = AngleToSteps(3, dt2 + dt3);
 
-	double motor4Delta = deltaPitch + deltaRoll;
-	double motor5Delta = deltaPitch - deltaRoll;
+	// Wrist differential motors:
+	// motor 4 = total pitch - roll
+	// motor 5 = total pitch + roll
+	delta.r[4] = AngleToSteps(4, dt2 + dt3 + dt4 - dt5);
+	delta.r[5] = AngleToSteps(5, dt2 + dt3 + dt4 + dt5);
 
-	delta.r[4] = AngleToSteps(4, motor4Delta);
-	delta.r[5] = AngleToSteps(5, motor5Delta);
+	// Gripper follows its own change only
+	delta.r[6] = mmToStepsGrip(dg + gComp);
+	delta.r[7] = 0; //still a nothing burger
 
-	// Gripper should use change, not absolute target
-	delta.r[6] = mmToStepsGrip(t.g - lastTask.g);
-	delta.r[7] = 0;
-
-	// Debug output
-	std::cout << "MoveTo delta steps:\n";
+	std::cout << "\nMoveTo delta steps:\n";
 	std::cout << "M1: " << delta.r[1] << "\n";
 	std::cout << "M2: " << delta.r[2] << "\n";
 	std::cout << "M3: " << delta.r[3] << "\n";
@@ -222,9 +273,108 @@ int Microbot::MoveTo(Taskspace& t, int speed)
 	std::cout << "M5: " << delta.r[5] << "\n";
 	std::cout << "M6: " << delta.r[6] << "\n";
 
-	SendStep(speed, delta);
+	int out = SendStep(speed, delta);
+	if (out != 1)
+	{
+		std::cout << "SendStep failed with code " << out << "\n";
+		return 0;
+	}
 
-	// Remember new commanded task pose
-	lastTask = t;
+	// Reconstruct achieved joint motion from ACTUAL commanded steps
+	Jointspace achievedJoint = currentJoint;
+
+	double d1 = StepsToAngle(1, delta.r[1]);
+	double d2 = StepsToAngle(2, delta.r[2]);
+
+	// Motor 3 represents d2 + d3
+	double d23 = StepsToAngle(3, delta.r[3]);
+	double d3 = d23 - d2;
+
+	// Motor 4 = d2 + d3 + d4 - d5
+	// Motor 5 = d2 + d3 + d4 + d5
+	double a45 = StepsToAngle(4, delta.r[4]);
+	double b45 = StepsToAngle(5, delta.r[5]);
+
+	double d5 = 0.5 * (b45 - a45);
+	double d4 = 0.5 * (a45 + b45) - d23;
+
+	achievedJoint.t[0] += d1;
+	achievedJoint.t[1] += d2;
+	achievedJoint.t[2] += d3;
+	achievedJoint.t[3] += d4;
+	achievedJoint.t[4] += d5;
+
+	// Build achieved task pose from FK
+	if (!ForwardKinematics(achievedJoint, achievedTask))
+	{
+		std::cout << "MoveTo ERROR: FK failed after move.\n";
+		return 0;
+	}
+
+	achievedTask.g = lastTask.g + stepsToMmGrip(delta.r[6]);
+
+	std::cout << "\nRequested target:\n";
+	std::cout << "x=" << t.x
+		<< " y=" << t.y
+		<< " z=" << t.z
+		<< " p=" << RadtoDeg(t.p)
+		<< " r=" << RadtoDeg(t.r)
+		<< " g=" << t.g << "\n";
+
+	std::cout << "FK estimated achieved pose:\n";
+	std::cout << "x=" << achievedTask.x
+		<< " y=" << achievedTask.y
+		<< " z=" << achievedTask.z
+		<< " p=" << RadtoDeg(achievedTask.p)
+		<< " r=" << RadtoDeg(achievedTask.r)
+		<< " g=" << achievedTask.g << "\n";
+
+	std::cout << "Error:\n";
+	std::cout << "dx=" << (achievedTask.x - t.x)
+		<< " dy=" << (achievedTask.y - t.y)
+		<< " dz=" << (achievedTask.z - t.z)
+		<< " dp=" << RadtoDeg(achievedTask.p - t.p)
+		<< " dr=" << RadtoDeg(achievedTask.r - t.r)
+		<< " dg=" << (achievedTask.g - t.g) << "\n";
+
+	// Update remembered pose to what was actually achieved
+	lastTask = achievedTask;
+
+	// Return achieved pose to caller
+	t = achievedTask;
+
+	return 1;
+}
+
+
+int Microbot::GoHome(int speed)
+{
+	Taskspace target = homePos;
+
+	std::cout << "\n--- Moving to HOME position ---\n";
+
+	return MoveTo(target, speed);
+}
+
+int Microbot::ResetHome()
+{
+	lastTask = homePos;
+	std::cout << "Software reset to HOME position.\n";
+	return 1;
+}
+
+int Microbot::PrintCurrentPosition()
+{
+	std::cout << "\n--- Current Robot Position ---\n";
+
+	std::cout << "x: " << lastTask.x << " mm\n";
+	std::cout << "y: " << lastTask.y << " mm\n";
+	std::cout << "z: " << lastTask.z << " mm\n";
+
+	std::cout << "p: " << RadtoDeg(lastTask.p) << " deg\n";
+	std::cout << "r: " << RadtoDeg(lastTask.r) << " deg\n";
+
+	std::cout << "g: " << lastTask.g << " mm\n";
+
 	return 1;
 }
