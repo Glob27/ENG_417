@@ -42,7 +42,7 @@ int Microbot::InverseKinematics(Taskspace t, Jointspace& j)
 	double Wz = pz + d * c234;
 
 	// Solve theta3
-	double c3_raw = ((Wx * Wx) + (Wy * Wy) + ((Wz - h) * (Wz - h))) / (2.0 * (a * a)) - 1.0;
+	double c3_raw = (((Wx * Wx) + (Wy * Wy) + ((Wz - h) * (Wz - h))) / (2.0 * (a * a))) - 1.0;
 
 	if (c3_raw > 1.0 || c3_raw < -1.0) {
 		std::cout << "IK ERROR: Position out of reach\n";
@@ -174,6 +174,8 @@ int Microbot::MoveTo(Taskspace& t, int speed)
 		std::cout << "MoveTo ERROR: could not solve IK for target position.\n";
 		return 0;
 	}
+
+	//TaskSpace Testing
 
 	// Base / shoulder / elbow
 	delta.r[1] = AngleToSteps(1, targetJoint.t[0] - currentJoint.t[0]);
