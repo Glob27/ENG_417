@@ -9,9 +9,6 @@ Taskspace homePos = { 125, 0, 20, (-90 * (PI / 180)), 0, 0 };
 Taskspace lastTask = homePos;
 
 //these are to be adjusted as needed once in lab
-double k2 = 0.1;
-double k3 = 0.1;
-double k4 = 0.1;
 
 double RadtoDeg(double rad)
 {
@@ -241,10 +238,6 @@ int Microbot::MoveTo(Taskspace& t, int speed)
 	
 	//gripper change in mm
 	double dg = t.g - lastTask.g;
-	
-	//cable comp from arm motion
-	double gComp = k2 * dt2 + k3 * dt3 + k4 * dt4;
-	
 
 	// Use coupled motor math like the better-working file
 	delta.r[1] = AngleToSteps(1, dt1);
@@ -262,7 +255,7 @@ int Microbot::MoveTo(Taskspace& t, int speed)
 	delta.r[5] = AngleToSteps(5, dt2 + dt3 + dt4 + dt5);
 
 	// Gripper follows its own change only
-	delta.r[6] = mmToStepsGrip(dg + gComp);
+	delta.r[6] = mmToStepsGrip(delta.r[3] + 13.2 * dg);
 	delta.r[7] = 0; //still a nothing burger
 
 	std::cout << "\nMoveTo delta steps:\n";
