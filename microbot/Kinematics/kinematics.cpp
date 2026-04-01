@@ -221,9 +221,6 @@ int Microbot::MoveTo(Taskspace& t, int speed)
 		return 0;
 	}
 
-
-	//TaskSpace Testing
-
 	// Base / shoulder / elbow
 	delta.r[1] = AngleToSteps(1, targetJoint.t[0] - currentJoint.t[0]);
 	delta.r[2] = AngleToSteps(2, targetJoint.t[1] - currentJoint.t[1]);
@@ -255,16 +252,18 @@ int Microbot::MoveTo(Taskspace& t, int speed)
 	delta.r[5] = AngleToSteps(5, dt2 + dt3 + dt4 + dt5);
 
 	// Gripper follows its own change only
-	delta.r[6] = delta.r[3] + mmToStepsGrip(13.2 * dg);
+	int gripSteps = mmToStepsGrip(13.2 * dg);
+	delta.r[6] = delta.r[3] + gripSteps;
+
 	delta.r[7] = 0; //still a nothing burger
 
-	std::cout << "\nMoveTo delta steps:\n";
-	std::cout << "M1: " << delta.r[1] << "\n";
-	std::cout << "M2: " << delta.r[2] << "\n";
-	std::cout << "M3: " << delta.r[3] << "\n";
-	std::cout << "M4: " << delta.r[4] << "\n";
-	std::cout << "M5: " << delta.r[5] << "\n";
-	std::cout << "M6: " << delta.r[6] << "\n";
+	//std::cout << "\nMoveTo delta steps:\n";
+	//std::cout << "M1: " << delta.r[1] << "\n";
+	//std::cout << "M2: " << delta.r[2] << "\n";
+	//std::cout << "M3: " << delta.r[3] << "\n";
+	//std::cout << "M4: " << delta.r[4] << "\n";
+	//std::cout << "M5: " << delta.r[5] << "\n";
+	//std::cout << "M6: " << delta.r[6] << "\n";
 
 	int out = SendStep(speed, delta);
 	if (out != 1)
@@ -304,7 +303,7 @@ int Microbot::MoveTo(Taskspace& t, int speed)
 		return 0;
 	}
 
-	achievedTask.g = lastTask.g + stepsToMmGrip(delta.r[6]);
+	achievedTask.g = lastTask.g + stepsToMmGrip(t.g);
 
 	std::cout << "\nRequested target:\n";
 	std::cout << "x=" << t.x
