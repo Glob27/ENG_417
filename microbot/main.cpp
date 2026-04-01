@@ -16,6 +16,7 @@ void printMenu()
 	std::cout << "3. Current Position Data\n";
 	std::cout << "4. Go To Home Posisiton\n";
 	std::cout << "5. Exit\n";
+    std::cout << "6. Reset Home\n";
 	std::cout << "Choose an option: ";
 }
 
@@ -119,13 +120,26 @@ int main()
 
         case 3:
         {
-            std::cout << "section not yet ready\n";
+            robot.PrintCurrentPosition();
             break;
         }
 
         case 4:
         {
-            std::cout << "section not yet ready\n";
+            std::cout << "Enter speed (0-240): ";
+            std::cin >> speed;
+
+            if (std::cin.fail())
+            {
+                clearInput();
+                std::cout << "Invalid speed.\n";
+                break;
+            }
+
+            if (speed > 240) speed = 240;
+            if (speed < 0) speed = 0;
+
+            robot.GoHome(speed);
             break;
         }
 
@@ -133,6 +147,11 @@ int main()
         {
             running = false;
             std::cout << "Exiting program.\n";
+            break;
+        }
+        case 6:
+        {
+            robot.ResetHome();
             break;
         }
 

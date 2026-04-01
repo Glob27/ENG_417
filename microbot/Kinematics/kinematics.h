@@ -72,6 +72,7 @@ public:
 	int InverseKinematics(Taskspace t, Jointspace &j);
 	int ForwardKinematics(Jointspace j, Taskspace &t);
 	int MoveTo(Taskspace &t,int speed);
+	int PrintCurrentPosition();
 	
 	// written in interface.cpp
 	int SendStep(int speed, Registerspace delta);
