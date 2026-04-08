@@ -303,7 +303,7 @@ int Microbot::MoveTo(Taskspace& t, int speed)
 		return 0;
 	}
 
-	achievedTask.g = lastTask.g + stepsToMmGrip(t.g);
+	achievedTask.g = lastTask.g + stepsToMmGrip(delta.r[6]);
 
 	std::cout << "\nRequested target:\n";
 	std::cout << "x=" << t.x
