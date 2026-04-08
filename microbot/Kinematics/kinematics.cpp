@@ -252,10 +252,15 @@ int Microbot::MoveTo(Taskspace& t, int speed)
 	delta.r[5] = AngleToSteps(5, dt2 + dt3 + dt4 + dt5);
 
 	// Gripper follows its own change only
-	int gripSteps = mmToStepsGrip(13.2 * dg);
+	int gripSteps = mmToStepsGrip(dg);
 	delta.r[6] = delta.r[3] + gripSteps;
 
 	delta.r[7] = 0; //still a nothing burger
+
+	std::cout << "dg = " << dg << "\n";
+	std::cout << "gripSteps = " << gripSteps << "\n";
+	std::cout << "delta.r[3] = " << delta.r[3] << "\n";
+	std::cout << "delta.r[6] = " << delta.r[6] << "\n";
 
 	//std::cout << "\nMoveTo delta steps:\n";
 	//std::cout << "M1: " << delta.r[1] << "\n";
@@ -303,7 +308,7 @@ int Microbot::MoveTo(Taskspace& t, int speed)
 		return 0;
 	}
 
-	achievedTask.g = lastTask.g + stepsToMmGrip(delta.r[6]);
+	achievedTask.g = lastTask.g + dg;
 
 	std::cout << "\nRequested target:\n";
 	std::cout << "x=" << t.x
