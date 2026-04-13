@@ -253,7 +253,7 @@ int Microbot::MoveTo(Taskspace& t, int speed)
 
 	// Gripper follows its own change only
 	int gripSteps = mmToStepsGrip(dg);
-	delta.r[6] = delta.r[3] + gripSteps;
+	delta.r[6] = -delta.r[3] + gripSteps;
 
 	delta.r[7] = 0; //still a nothing burger
 
