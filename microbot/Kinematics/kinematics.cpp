@@ -28,7 +28,17 @@ int Microbot::InverseKinematics(Taskspace t, Jointspace& j)
 	double r = t.r;
 
 	// Joint definitions from task space
-	double theta1 = std::atan2(py, px);
+	double theta1 = std::atan(py/px);
+
+	if (theta1 > 90){
+		std::cout << "IK ERROR: Position out of reach\n";
+		return 0;
+	}
+	if (theta1 < -90){
+		std::cout << "IK ERROR: Position out of reach\n";
+		return 0;
+	}
+
 	double theta234 = p + (PI / 2.0);
 	double theta5 = r;
 
@@ -253,7 +263,7 @@ int Microbot::MoveTo(Taskspace& t, int speed)
 
 	// Gripper follows its own change only
 	int gripSteps = mmToStepsGrip(dg);
-	delta.r[6] = -delta.r[3] + gripSteps;
+	delta.r[6] = delta.r[3] + gripSteps;
 
 	delta.r[7] = 0; //still a nothing burger
 
