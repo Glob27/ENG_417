@@ -290,12 +290,7 @@ int Microbot::MoveTo(Taskspace& t, int speed)
 	//std::cout << "M5: " << delta.r[5] << "\n";
 	//std::cout << "M6: " << delta.r[6] << "\n";
 
-	int out = SendStep(speed, delta);
-	if (out != 1)
-	{
-		std::cout << "SendStep failed with code " << out << "\n";
-		return 0;
-	}
+	SendStep(speed, delta);
 
 	// Reconstruct achieved joint motion from ACTUAL commanded steps
 	Jointspace achievedJoint = currentJoint;
