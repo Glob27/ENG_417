@@ -212,6 +212,16 @@ double stepsToMmGrip(int steps)
 
 int Microbot::MoveTo(Taskspace& t, int speed)
 {
+	//testing for bugs
+	std::cout << "x: " << lastTask.x << " mm\n";
+	std::cout << "y: " << lastTask.y << " mm\n";
+	std::cout << "z: " << lastTask.z << " mm\n";
+
+	std::cout << "p: " << RadtoDeg(lastTask.p) << " deg\n";
+	std::cout << "r: " << RadtoDeg(lastTask.r) << " deg\n";
+
+	std::cout << "g: " << lastTask.g << " mm\n";
+
 	Jointspace currentJoint = {};
 	Jointspace targetJoint = {};
 	Registerspace delta = {};
@@ -232,9 +242,9 @@ int Microbot::MoveTo(Taskspace& t, int speed)
 	}
 
 	// Base / shoulder / elbow
-	delta.r[1] = AngleToSteps(1, targetJoint.t[0] - currentJoint.t[0]);
-	delta.r[2] = AngleToSteps(2, targetJoint.t[1] - currentJoint.t[1]);
-	delta.r[3] = AngleToSteps(3, targetJoint.t[2] - currentJoint.t[2]);
+	//delta.r[1] = AngleToSteps(1, targetJoint.t[0] - currentJoint.t[0]);
+	//delta.r[2] = AngleToSteps(2, targetJoint.t[1] - currentJoint.t[1]);
+	//delta.r[3] = AngleToSteps(3, targetJoint.t[2] - currentJoint.t[2]);
 
 	// Joint deltas in radians
 	double dt1 = targetJoint.t[0] - currentJoint.t[0];
@@ -267,10 +277,10 @@ int Microbot::MoveTo(Taskspace& t, int speed)
 
 	delta.r[7] = 0; //still a nothing burger
 
-	std::cout << "dg = " << dg << "\n";
-	std::cout << "gripSteps = " << gripSteps << "\n";
-	std::cout << "delta.r[3] = " << delta.r[3] << "\n";
-	std::cout << "delta.r[6] = " << delta.r[6] << "\n";
+	//std::cout << "dg = " << dg << "\n";
+	//std::cout << "gripSteps = " << gripSteps << "\n";
+	//std::cout << "delta.r[3] = " << delta.r[3] << "\n";
+	//std::cout << "delta.r[6] = " << delta.r[6] << "\n";
 
 	//std::cout << "\nMoveTo delta steps:\n";
 	//std::cout << "M1: " << delta.r[1] << "\n";
@@ -320,29 +330,15 @@ int Microbot::MoveTo(Taskspace& t, int speed)
 
 	achievedTask.g = lastTask.g + dg;
 
-	std::cout << "\nRequested target:\n";
-	std::cout << "x=" << t.x
-		<< " y=" << t.y
-		<< " z=" << t.z
-		<< " p=" << RadtoDeg(t.p)
-		<< " r=" << RadtoDeg(t.r)
-		<< " g=" << t.g << "\n";
+	//still testing for bugs
+	std::cout << "x: " << lastTask.x << " mm\n";
+	std::cout << "y: " << lastTask.y << " mm\n";
+	std::cout << "z: " << lastTask.z << " mm\n";
 
-	std::cout << "FK estimated achieved pose:\n";
-	std::cout << "x=" << achievedTask.x
-		<< " y=" << achievedTask.y
-		<< " z=" << achievedTask.z
-		<< " p=" << RadtoDeg(achievedTask.p)
-		<< " r=" << RadtoDeg(achievedTask.r)
-		<< " g=" << achievedTask.g << "\n";
+	std::cout << "p: " << RadtoDeg(lastTask.p) << " deg\n";
+	std::cout << "r: " << RadtoDeg(lastTask.r) << " deg\n";
 
-	std::cout << "Error:\n";
-	std::cout << "dx=" << (achievedTask.x - t.x)
-		<< " dy=" << (achievedTask.y - t.y)
-		<< " dz=" << (achievedTask.z - t.z)
-		<< " dp=" << RadtoDeg(achievedTask.p - t.p)
-		<< " dr=" << RadtoDeg(achievedTask.r - t.r)
-		<< " dg=" << (achievedTask.g - t.g) << "\n";
+	std::cout << "g: " << lastTask.g << " mm\n";
 
 	// Update remembered pose to what was actually achieved
 	lastTask = achievedTask;
