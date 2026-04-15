@@ -330,6 +330,9 @@ int Microbot::MoveTo(Taskspace& t, int speed)
 
 	achievedTask.g = lastTask.g + dg;
 
+	// Update remembered pose to what was actually achieved
+	lastTask = achievedTask;
+
 	//still testing for bugs
 	std::cout << "x: " << lastTask.x << " mm\n";
 	std::cout << "y: " << lastTask.y << " mm\n";
@@ -339,9 +342,6 @@ int Microbot::MoveTo(Taskspace& t, int speed)
 	std::cout << "r: " << RadtoDeg(lastTask.r) << " deg\n";
 
 	std::cout << "g: " << lastTask.g << " mm\n";
-
-	// Update remembered pose to what was actually achieved
-	lastTask = achievedTask;
 
 	// Return achieved pose to caller
 	t = achievedTask;
