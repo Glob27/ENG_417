@@ -27,17 +27,19 @@ int Microbot::InverseKinematics(Taskspace t, Jointspace& j)
 	double p = t.p;
 	double r = t.r;
 
+	if (t.r > 180 || t.r < -180) {
+		std::cout << "IK ERROR: Wrist anlge out of reach\n";
+		return 0;
+	}
+
 	// Joint definitions from task space
 	double theta1 = std::atan(py/px);
 
-	if (theta1 > 90){
-		std::cout << "IK ERROR: Position out of reach\n";
+	if (theta1 > 90 || theta1 < -90){
+		std::cout << "IK ERROR: Base anlge out of reach\n";
 		return 0;
 	}
-	if (theta1 < -90){
-		std::cout << "IK ERROR: Position out of reach\n";
-		return 0;
-	}
+	
 
 	double theta234 = p + (PI / 2.0);
 	double theta5 = r;
@@ -56,6 +58,7 @@ int Microbot::InverseKinematics(Taskspace t, Jointspace& j)
 	// Solve theta3
 	double c3_raw = (((Wx * Wx) + (Wy * Wy) + ((Wz - h) * (Wz - h))) / (2.0 * (a * a))) - 1.0;
 
+	//checking if theta 3 is out of bonds
 	if (c3_raw > 1.0 || c3_raw < -1.0) {
 		std::cout << "IK ERROR: Position out of reach\n";
 		return 0;
@@ -75,18 +78,20 @@ int Microbot::InverseKinematics(Taskspace t, Jointspace& j)
 	// Solve theta2
 	double planar = std::sqrt((Wx * Wx) + (Wy * Wy));
 
-	double c2, s2;
+	double c2, s2; //Make cos2 and sin2
 
-	if (Wx >= 0.0) {
+	if (Wx >= 0.0) { //forumlas is wx is positive
 		c2 = ((Wz - h) * s3 + planar * (1.0 + c3)) / (2.0 * a * (1.0 + c3));
 		s2 = ((Wz - h) * (1.0 + c3) - s3 * planar) / (2.0 * a * (1.0 + c3));
 	}
-	else {
+	else { //formulas if wx is negitive
 		c2 = ((Wz - h) * s3 - planar * (1.0 + c3)) / (2.0 * a * (1.0 + c3));
 		s2 = ((Wz - h) * (1.0 + c3) + s3 * planar) / (2.0 * a * (1.0 + c3));
 	}
 
-	double theta2 = std::atan2(s2, c2);
+	double theta2 = std::atan2(s2, c2); //setting theta 2
+	
+	//add theta 2 joint limits here
 
 	// Solve theta4 so total pitch matches theta234
 	double theta4 = theta234 - theta2 - theta3;
@@ -212,15 +217,6 @@ double stepsToMmGrip(int steps)
 
 int Microbot::MoveTo(Taskspace& t, int speed)
 {
-	//testing for bugs
-	std::cout << "x: " << lastTask.x << " mm\n";
-	std::cout << "y: " << lastTask.y << " mm\n";
-	std::cout << "z: " << lastTask.z << " mm\n";
-
-	std::cout << "p: " << RadtoDeg(lastTask.p) << " deg\n";
-	std::cout << "r: " << RadtoDeg(lastTask.r) << " deg\n";
-
-	std::cout << "g: " << lastTask.g << " mm\n";
 
 	Jointspace currentJoint = {};
 	Jointspace targetJoint = {};
@@ -240,11 +236,6 @@ int Microbot::MoveTo(Taskspace& t, int speed)
 		std::cout << "MoveTo ERROR: could not solve IK for target position.\n";
 		return 0;
 	}
-
-	// Base / shoulder / elbow
-	//delta.r[1] = AngleToSteps(1, targetJoint.t[0] - currentJoint.t[0]);
-	//delta.r[2] = AngleToSteps(2, targetJoint.t[1] - currentJoint.t[1]);
-	//delta.r[3] = AngleToSteps(3, targetJoint.t[2] - currentJoint.t[2]);
 
 	// Joint deltas in radians
 	double dt1 = targetJoint.t[0] - currentJoint.t[0];
@@ -275,7 +266,9 @@ int Microbot::MoveTo(Taskspace& t, int speed)
 	int gripSteps = mmToStepsGrip(dg);
 	delta.r[6] = delta.r[3] + gripSteps;
 
-	delta.r[7] = 0; //still a nothing burger
+	delta.r[7] = 0; //still a nothing burger //dont know why people are confused about this
+
+	//old debugging code if having trouble you can use this
 
 	//std::cout << "dg = " << dg << "\n";
 	//std::cout << "gripSteps = " << gripSteps << "\n";
@@ -315,6 +308,7 @@ int Microbot::MoveTo(Taskspace& t, int speed)
 	double d5 = 0.5 * (b45 - a45);
 	double d4 = 0.5 * (a45 + b45) - d23;
 
+	//arcived values will replace the current lastTask
 	achievedJoint.t[0] += d1;
 	achievedJoint.t[1] += d2;
 	achievedJoint.t[2] += d3;
@@ -328,20 +322,11 @@ int Microbot::MoveTo(Taskspace& t, int speed)
 		return 0;
 	}
 
+	//updating arcived gripper value
 	achievedTask.g = lastTask.g + dg;
 
 	// Update remembered pose to what was actually achieved
 	lastTask = achievedTask;
-
-	//still testing for bugs
-	std::cout << "x: " << lastTask.x << " mm\n";
-	std::cout << "y: " << lastTask.y << " mm\n";
-	std::cout << "z: " << lastTask.z << " mm\n";
-
-	std::cout << "p: " << RadtoDeg(lastTask.p) << " deg\n";
-	std::cout << "r: " << RadtoDeg(lastTask.r) << " deg\n";
-
-	std::cout << "g: " << lastTask.g << " mm\n";
 
 	// Return achieved pose to caller
 	t = achievedTask;
