@@ -8,8 +8,6 @@
 Taskspace homePos = { 125, 0, 20, (-90 * (PI / 180)), 0, 0 };
 Taskspace lastTask = homePos;
 
-//these are to be adjusted as needed once in lab
-
 double RadtoDeg(double rad)
 {
 	return rad * (180.0 / PI);
@@ -58,7 +56,7 @@ int Microbot::InverseKinematics(Taskspace t, Jointspace& j)
 	// Solve theta3
 	double c3_raw = (((Wx * Wx) + (Wy * Wy) + ((Wz - h) * (Wz - h))) / (2.0 * (a * a))) - 1.0;
 
-	//checking if theta 3 is out of bonds
+	//checking if theta 3 is out of bounds
 	if (c3_raw > 1.0 || c3_raw < -1.0) {
 		std::cout << "IK ERROR: Position out of reach\n";
 		return 0;
@@ -84,7 +82,7 @@ int Microbot::InverseKinematics(Taskspace t, Jointspace& j)
 		c2 = ((Wz - h) * s3 + planar * (1.0 + c3)) / (2.0 * a * (1.0 + c3));
 		s2 = ((Wz - h) * (1.0 + c3) - s3 * planar) / (2.0 * a * (1.0 + c3));
 	}
-	else { //formulas if wx is negitive
+	else { //formulas if wx is negative
 		c2 = ((Wz - h) * s3 - planar * (1.0 + c3)) / (2.0 * a * (1.0 + c3));
 		s2 = ((Wz - h) * (1.0 + c3) + s3 * planar) / (2.0 * a * (1.0 + c3));
 	}
@@ -140,8 +138,8 @@ int AngleToSteps(int motor, double angleRad)
 	return static_cast<int>(std::round(motorSign[motor] * angleRad * stepsPerRad[motor - 1]));
 }
 
-//this is part of an output rework that lets us see the number of steps the robot takes
-//itll be deleted at the end
+//This is part of an output rework that lets us see the number of steps the robot takes
+//it'll be deleted at the end
 double StepsToAngle(int motor, int steps) 
 {
 	static const double radPerStep[] = {
@@ -209,15 +207,18 @@ int mmToStepsGrip(double grip)
 	return static_cast<int>(std::round(grip * 13.4));
 }
 
-//anouther debugging tool thatll get got once were done
+//Function for converting gripper steps to mm //mostly for debugging
 double stepsToMmGrip(int steps)
 {
 	return steps / 13.4;
 }
 
+
+//the movement function
 int Microbot::MoveTo(Taskspace& t, int speed)
 {
 
+	//making joint spaces
 	Jointspace currentJoint = {};
 	Jointspace targetJoint = {};
 	Registerspace delta = {};
@@ -268,7 +269,7 @@ int Microbot::MoveTo(Taskspace& t, int speed)
 
 	delta.r[7] = 0; //still a nothing burger //dont know why people are confused about this
 
-	//old debugging code if having trouble you can use this
+	//old debugging code, if you're having trouble, you can use this
 
 	//std::cout << "dg = " << dg << "\n";
 	//std::cout << "gripSteps = " << gripSteps << "\n";
@@ -283,7 +284,7 @@ int Microbot::MoveTo(Taskspace& t, int speed)
 	//std::cout << "M5: " << delta.r[5] << "\n";
 	//std::cout << "M6: " << delta.r[6] << "\n";
 
-	SendStep(speed, delta);
+	SendStep(speed, delta); //send the robot the calulated number of steps
 
 	// Reconstruct achieved joint motion from ACTUAL commanded steps
 	Jointspace achievedJoint = currentJoint;
@@ -303,21 +304,21 @@ int Microbot::MoveTo(Taskspace& t, int speed)
 	double d5 = 0.5 * (b45 - a45);
 	double d4 = 0.5 * (a45 + b45) - d23;
 
-	//arcived values will replace the current lastTask
+	//archived values will replace the current lastTask
 	achievedJoint.t[0] += d1;
 	achievedJoint.t[1] += d2;
 	achievedJoint.t[2] += d3;
 	achievedJoint.t[3] += d4;
 	achievedJoint.t[4] += d5;
 
-	// Build achieved task pose from FK
+	// Build achieved task pose from FK //also helps prove that the angles worked
 	if (!ForwardKinematics(achievedJoint, achievedTask))
 	{
 		std::cout << "MoveTo ERROR: FK failed after move.\n";
 		return 0;
 	}
 
-	//updating arcived gripper value
+	//updating archived gripper value
 	achievedTask.g = lastTask.g + dg;
 
 	// Update remembered pose to what was actually achieved
@@ -329,7 +330,7 @@ int Microbot::MoveTo(Taskspace& t, int speed)
 	return 1;
 }
 
-
+//sends the micro bot home
 int Microbot::GoHome(int speed)
 {
 	Taskspace target = homePos;
@@ -339,6 +340,7 @@ int Microbot::GoHome(int speed)
 	return MoveTo(target, speed);
 }
 
+//resets the "current pos" to the home
 int Microbot::ResetHome()
 {
 	lastTask = homePos;
@@ -346,6 +348,7 @@ int Microbot::ResetHome()
 	return 1;
 }
 
+//prints the current position saved in the program 
 int Microbot::PrintCurrentPosition()
 {
 	std::cout << "\n--- Current Robot Position ---\n";
