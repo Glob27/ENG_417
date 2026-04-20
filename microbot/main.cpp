@@ -87,7 +87,7 @@ int main()
 
         case 2: //this is the function where we send the EE pos that we want the robot to use
         {
-            std::cout << "Enter speed (0-240): "; //first the speed 
+            std::cout << "Enter speed (200-240): "; //first the speed 
             std::cin >> speed;
 
             if (std::cin.fail())
@@ -98,7 +98,7 @@ int main()
             }
 
             if (speed > 240) speed = 240;
-            if (speed < 0) speed = 0;
+            if (speed < 200) speed = 200; //I choose the 200 becouse the microbot tends to not peroform well at speeds slower than this
 
             std::cout << "\nEnter target task-space values:\n"; 
             std::cout << "x y z p r g: "; //we enter target values
