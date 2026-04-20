@@ -101,13 +101,13 @@ int Microbot::InverseKinematics(Taskspace t, Jointspace& j)
 	j.t[3] = theta4; // wrist pitch contribution
 	j.t[4] = theta5; // wrist roll
 
-	printf("angles the microbot is using %.2f %.2f %.2f %.2f %.2f\n",
-		RadtoDeg(theta1),
-		RadtoDeg(theta2),
-		RadtoDeg(theta3),
-		RadtoDeg(theta4),
-		RadtoDeg(theta5));
-	fflush(stdout);
+	//printf("angles the microbot is using %.2f %.2f %.2f %.2f %.2f\n",
+	//	RadtoDeg(theta1),
+	//	RadtoDeg(theta2),
+	//	RadtoDeg(theta3),
+	//	RadtoDeg(theta4),
+	//	RadtoDeg(theta5));
+	//fflush(stdout);
 
 	return 1;
 }
