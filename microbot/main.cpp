@@ -18,6 +18,7 @@ void printMenu()
 	std::cout << "4. Go To Home Position\n";
 	std::cout << "5. Exit\n";
     std::cout << "6. Reset Home\n";
+    std::cout << "7. Straight Line\n";
 	std::cout << "Choose an option: ";
 }
 
@@ -158,6 +159,45 @@ int main()
         case 6: //resets to the home position
         {
             robot.ResetHome();
+            break;
+        }
+        case 7:
+        {
+            std::cout << "Straight Line Choosen:\n"; //first the speed 
+            std::cout << "Enter speed (200-240): "; //first the speed 
+            std::cin >> speed;
+
+            if (std::cin.fail())
+            {
+                clearInput();
+                std::cout << "Invalid speed.\n";
+                break;
+            }
+
+            if (speed > 240) speed = 240;
+            if (speed < 200) speed = 200; //I choose the 200 becouse the microbot tends to not peroform well at speeds slower than this
+
+            std::cout << "\nEnter target task-space values:\n";
+            std::cout << "x y z p r g: "; //we enter target values
+            double p_deg, r_deg;
+
+            std::cin >> t.x >> t.y >> t.z >> p_deg >> r_deg >> t.g;
+
+            t.p = degToRad(p_deg);
+            t.r = degToRad(r_deg);
+
+            if (std::cin.fail())
+            {
+                clearInput();
+                std::cout << "Invalid IK input.\n";
+                break;
+            }
+
+            if (!robot.linePlotting(t, speed)) //we send the target values to our move to function
+            {
+                std::cout << "Move failed.\n";
+            }
+
             break;
         }
 

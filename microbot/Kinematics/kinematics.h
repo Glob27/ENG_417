@@ -75,6 +75,7 @@ public:
 	int PrintCurrentPosition();
 	int GoHome(int speed);
 	int ResetHome();
+	int linePlotting(Taskspace& t, int speed);
 	
 	// written in interface.cpp
 	int SendStep(int speed, Registerspace delta);
