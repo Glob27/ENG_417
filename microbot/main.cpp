@@ -181,27 +181,36 @@ int main()
                 speed = 200;
             } //I choose the 200 becouse the microbot tends to not peroform well at speeds slower than this
 
-            std::cout << "\nEnter target task-space values:\n";
-            std::cout << "x y z p r g: "; //we enter target values
-            double p_deg, r_deg;
+            bool repeating = true;
 
-            std::cin >> t.x >> t.y >> t.z >> p_deg >> r_deg >> t.g;
+            while (repeating) {
+                std::cout << "\nEnter target task-space values:\n";
+                std::cout << "x y z p r g: "; //we enter target values
+                double p_deg, r_deg;
 
-            t.p = degToRad(p_deg);
-            t.r = degToRad(r_deg);
+                std::cin >> t.x >> t.y >> t.z >> p_deg >> r_deg >> t.g;
 
-            if (std::cin.fail())
-            {
-                clearInput();
-                std::cout << "Invalid IK input.\n";
-                break;
+                t.p = degToRad(p_deg);
+                t.r = degToRad(r_deg);
+
+                if (std::cin.fail())
+                {
+                    clearInput();
+                    std::cout << "Invalid IK input.\n";
+                    break;
+                }
+
+                if (!robot.linePlotting(t, speed)) //we send the target values to our move to function
+                {
+                    std::cout << "Move failed.\n";
+                }
+                std::cout << "Repeat? Y/N";
+                std::cin >> option;
+
+                if (option != "y" || option != "Y") {
+                    repeating = false;
+                }
             }
-
-            if (!robot.linePlotting(t, speed)) //we send the target values to our move to function
-            {
-                std::cout << "Move failed.\n";
-            }
-
             break;
         }
 
