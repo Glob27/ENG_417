@@ -4,22 +4,22 @@
 
 void clearInput()
 {
-	std::cin.clear();
-	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::cin.clear();
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
 
 //this prints the menu that the user sees
 void printMenu()
 {
-	std::cout << "\n=== Microbot Menu ===\n";
-	std::cout << "1. Send Manual Step Command\n";
-	std::cout << "2. Send IK Command\n";
-	std::cout << "3. Current Position Data\n";
-	std::cout << "4. Go To Home Position\n";
-	std::cout << "5. Exit\n";
+    std::cout << "\n=== Microbot Menu ===\n";
+    std::cout << "1. Send Manual Step Command\n";
+    std::cout << "2. Send IK Command\n";
+    std::cout << "3. Current Position Data\n";
+    std::cout << "4. Go To Home Position\n";
+    std::cout << "5. Exit\n";
     std::cout << "6. Reset Home\n";
     std::cout << "7. Straight Line\n";
-	std::cout << "Choose an option: ";
+    std::cout << "Choose an option: ";
 }
 
 //used to convert user degree input into program rad
@@ -31,23 +31,23 @@ double degToRad(double deg)
 //the main function
 int main()
 {
-  	//restering stuff 
-	Microbot robot;
+    //restering stuff 
+    Microbot robot;
     Registerspace delta;
     Taskspace t;
 
-   	//defining speed and choice
-	int speed = 235;
+    //defining speed and choice
+    int speed = 235;
     int choice = 0;
 
-    bool running = true; 
+    bool running = true;
     while (running) //making the while function that the user interacts with
     {
         printMenu(); //printing the menu
         std::cin >> choice; //userinput
 
         if (std::cin.fail()) //checks if an input failed, example, they tried using letters instead of numbers //not 100 percent on this one it was a while ago 
-								//and prevent users from breaking stuff is something that confuses me
+            //and prevent users from breaking stuff is something that confuses me
         {
             clearInput();
             std::cout << "Invalid menu input.\n";
@@ -101,7 +101,7 @@ int main()
             if (speed > 240) speed = 240;
             if (speed < 200) speed = 200; //I choose the 200 becouse the microbot tends to not peroform well at speeds slower than this
 
-            std::cout << "\nEnter target task-space values:\n"; 
+            std::cout << "\nEnter target task-space values:\n";
             std::cout << "x y z p r g: "; //we enter target values
             double p_deg, r_deg;
 
@@ -163,27 +163,45 @@ int main()
         }
         case 7:
         {
-            char again = 'y';
+            std::cout << "Straight Line Choosen:\n"; //first the speed 
+            std::cout << "Enter speed (200-240): "; //first the speed 
+            std::cin >> speed;
 
-            while (again == 'y' || again == 'Y')
+            if (std::cin.fail())
             {
-                Taskspace t;
-                int speed;
-
-                cout << "Enter x y z p r g: ";
-                cin >> t.x >> t.y >> t.z >> t.p >> t.r >> t.g;
-
-                cout << "Enter speed: ";
-                cin >> speed;
-
-                if (robot.linePlotting(t, speed))
-                    cout << "Straight-line move complete.\n";
-                else
-                    cout << "Straight-line move failed.\n";
-
-                cout << "Do another straight-line move? (y/n): ";
-                cin >> again;
+                clearInput();
+                std::cout << "Invalid speed.\n";
+                break;
             }
+
+            if (speed > 240) {
+                speed = 240;
+            }
+            if (speed < 200) {
+                speed = 200;
+            } //I choose the 200 becouse the microbot tends to not peroform well at speeds slower than this
+
+            std::cout << "\nEnter target task-space values:\n";
+            std::cout << "x y z p r g: "; //we enter target values
+            double p_deg, r_deg;
+
+            std::cin >> t.x >> t.y >> t.z >> p_deg >> r_deg >> t.g;
+
+            t.p = degToRad(p_deg);
+            t.r = degToRad(r_deg);
+
+            if (std::cin.fail())
+            {
+                clearInput();
+                std::cout << "Invalid IK input.\n";
+                break;
+            }
+
+            if (!robot.linePlotting(t, speed)) //we send the target values to our move to function
+            {
+                std::cout << "Move failed.\n";
+            }
+
             break;
         }
 
