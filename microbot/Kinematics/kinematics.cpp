@@ -217,67 +217,48 @@ double stepsToMmGrip(int steps)
 
 int Microbot::linePlotting(Taskspace& target, int speed)
 {
-	Taskspace start = achievedTask;
+	Taskspace start = lastTask;
 
-	//Change in x y z
 	double deltax = target.x - start.x;
 	double deltay = target.y - start.y;
 	double deltaz = target.z - start.z;
 
-	//Gripper deltas
 	double deltap = target.p - start.p;
 	double deltar = target.r - start.r;
 	double deltag = target.g - start.g;
 
-	// Straight-line distance in XYZ space
-	double lineLegth = std::sqrt((deltax * deltax) + (deltay * deltay) + (deltaz * deltaz));
+	double lineLength = std::sqrt(deltax * deltax + deltay * deltay + deltaz * deltaz);
 
-	// Prevent divide-by-zero / zero-length move
 	if (lineLength < 1e-6 &&
-		std::abs(dr) < 1e-6 &&
-		std::abs(dp) < 1e-6 &&
-		std::abs(dg) < 1e-6)
+		std::abs(deltap) < 1e-6 &&
+		std::abs(deltar) < 1e-6 &&
+		std::abs(deltag) < 1e-6)
 	{
-		return true;
+		return 1;
 	}
 
-	bool hopNeeded = false;
-	int hops = std::ceil(lineLegth / hopDistance);
-	if (hops >= 2) {
-		hopNeeded = true
-	}
-	else {
-		return hopNeeded;
-	}
-
-	// If XYZ barely changes but orientation does, still take at least one step
+	int hops = static_cast<int>(std::ceil(lineLength / hopDistance));
 	hops = std::max(hops, 1);
-	if (hopNeeded = true) {
-		for (int i = 1; i <= hops; i++)
+
+	for (int i = 1; i <= hops; i++)
+	{
+		double s = static_cast<double>(i) / static_cast<double>(hops);
+
+		Taskspace pi = {};
+		pi.x = start.x + s * deltax;
+		pi.y = start.y + s * deltay;
+		pi.z = start.z + s * deltaz;
+		pi.p = start.p + s * deltap;
+		pi.r = start.r + s * deltar;
+		pi.g = start.g + s * deltag;
+
+		if (!MoveTo(pi, speed))
 		{
-			double s = static_cast<double>(i) / static_cast<double>(hops);
-
-			Taskspace pi = {};
-			pi.x = start.x + s * dx;
-			pi.y = start.y + s * dy;
-			pi.z = start.z + s * dz;
-			pi.r = start.r + s * dr;
-			pi.p = start.p + s * dp;
-			pi.g = start.g + s * dg;
-
-			// Reuse your existing point-to-point move
-			// This should do IK + step conversion + send command
-			if (!MoveTo(pi, speed))
-			{
-				return false;
-			}
-
-			// If MoveTo does not already update achievedTask, do it here
-			achievedTask = pi;
+			return 0;
 		}
 	}
 
-	return true;
+	return 1;
 }
 
 //the movement function
