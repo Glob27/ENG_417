@@ -19,6 +19,7 @@ void printMenu()
     std::cout << "5. Exit\n";
     std::cout << "6. Reset Home\n";
     std::cout << "7. Straight Line\n";
+    std::cout << "8. Change Obstacle List\n";
     std::cout << "Choose an option: ";
 }
 
@@ -204,6 +205,8 @@ int main()
                 {
                     std::cout << "Move failed.\n";
                 }
+
+                char option;
                 std::cout << "Repeat? Y/N";
                 std::cin >> option;
 
@@ -211,6 +214,11 @@ int main()
                     repeating = false;
                 }
             }
+            break;
+        }
+        case 8:
+        {
+            std::cout << "Not Yet ready\n";
             break;
         }
 

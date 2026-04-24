@@ -42,6 +42,11 @@ constexpr double PI = acos(-1);
 		double x,y,z,p,r,g;
 	};
 
+	struct objFrame
+	{
+		double x, y, z, w, l, h;
+	};
+
 	struct Jointspace
 	{
 		double t[7];
@@ -76,6 +81,7 @@ public:
 	int GoHome(int speed);
 	int ResetHome();
 	int linePlotting(Taskspace& t, int speed);
+	int ChangeObstacleList(objFrame o);
 	
 	// written in interface.cpp
 	int SendStep(int speed, Registerspace delta);
