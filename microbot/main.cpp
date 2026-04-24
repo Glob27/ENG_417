@@ -48,7 +48,7 @@ int main()
         std::cin >> choice; //userinput
 
         if (std::cin.fail()) //checks if an input failed, example, they tried using letters instead of numbers //not 100 percent on this one it was a while ago 
-            //and prevent users from breaking stuff is something that confuses me
+                            //and prevent users from breaking stuff is something that confuses me
         {
             clearInput();
             std::cout << "Invalid menu input.\n";
