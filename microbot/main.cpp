@@ -207,10 +207,10 @@ int main()
                 }
 
                 char option;
-                std::cout << "Repeat? Y/N";
+                std::cout << "Repeat? Y/N ";
                 std::cin >> option;
 
-                if (option != "y" || option != "Y") {
+                if (option != 'y' && option != 'Y') {
                     repeating = false;
                 }
             }
