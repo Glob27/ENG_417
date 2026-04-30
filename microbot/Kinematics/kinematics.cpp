@@ -4,11 +4,14 @@
 #include <algorithm>
 #include <iostream>
 #include <cstdio>
+#include <vector>
 
 Taskspace homePos = { 125, 0, 20, (-90 * (PI / 180)), 0, 0 };
 Taskspace lastTask = homePos;
 
 int hopDistance = 25; //mm
+
+std::vector<objFrame> obstacles;
 
 double RadtoDeg(double rad)
 {
@@ -260,6 +263,24 @@ int Microbot::linePlotting(Taskspace& target, int speed)
 
 	return 1;
 }
+
+int Microbot::AddObstical(objFrame o) {
+	obstacles.push_back(o);
+	return 1;
+}
+
+int Microbot::RemoveObstical(int index) {
+
+	if (index < 0 || index >= obstacles.size())
+	{
+		std::cout << "Invalid obstacle index.\n";
+		return 0;
+	}
+
+	obstacles.erase(obstacles.begin() + index);
+	return 1;
+}
+
 
 //the movement function
 int Microbot::MoveTo(Taskspace& t, int speed)

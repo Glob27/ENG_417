@@ -44,7 +44,7 @@ constexpr double PI = acos(-1);
 
 	struct objFrame
 	{
-		double x, y, z, w, l, h;
+		double x, y, z, w, l, h,r;
 	};
 
 	struct Jointspace
@@ -74,14 +74,19 @@ public:
 
 // Public Member Functions
 	// to be written in kinematics.cpp
+	//Lab 2
 	int InverseKinematics(Taskspace t, Jointspace &j);
 	int ForwardKinematics(Jointspace j, Taskspace &t);
 	int MoveTo(Taskspace &t,int speed);
 	int PrintCurrentPosition();
 	int GoHome(int speed);
 	int ResetHome();
+	//Lab 3
 	int linePlotting(Taskspace& t, int speed);
-	int ChangeObstacleList(objFrame o);
+	//Lab 4 //Extra Credit
+	int AddObstical(objFrame o);
+	int RemoveObstical(int index);
+	int DetectObstical(Taskspace& t);
 	
 	// written in interface.cpp
 	int SendStep(int speed, Registerspace delta);
